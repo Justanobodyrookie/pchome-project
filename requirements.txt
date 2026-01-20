@@ -1,0 +1,28 @@
+# === 網頁應用與視覺化 ===
+streamlit
+plotly
+pandas
+numpy
+
+# === 爬蟲與網頁自動化 ===
+Scrapy
+scrapy-playwright
+DrissionPage
+beautifulsoup4
+requests
+
+# === 資料庫與儲存 ===
+psycopg2-binary
+boto3
+SQLAlchemy
+
+# === 環境變數與工具 ===
+python-dotenv
+python-dateutil
+
+# === API 與 機器人 ===
+Flask
+line-bot-sdk
+google-api-python-client
+google-auth
+google-ai-generativelanguage

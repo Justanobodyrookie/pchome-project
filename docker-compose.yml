@@ -1,0 +1,80 @@
+#專案名,現在不用寫version了
+
+services:
+  #資料庫,用的是Postgres
+  postgres:
+    #版本
+    image: postgres:15
+    #救資料,永遠選擇always
+    restart: always
+    #帳號、密碼、資料庫
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: pchome_db
+    #埠口
+    ports:
+      - "5432:5432"
+    #
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    networks:
+      - data_network
+  #檔案管理員
+  minio:
+    #版本&技能包
+    image: minio/minio
+    #一上班就執行指令,啟動伺服器並開啟控制台
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./minio_data:/data
+    networks:
+      - data_network
+  #資料流
+  mage:
+    image: mageai/mageai:latest
+    command: mage start pchome_project
+    #給他鑰匙
+    environment:
+      #關掉驗證
+      REQUIRE_USER_AUTHENTICATION: "0"
+      POSTGRES_CONNECT_STRING: postgresql://user:${DB_PASSWORD}@postgres:5432/pchome_db
+      DB_PASSWORD: ${DB_PASSWORD}
+      AWS_ACCESS_KEY_ID: admin
+      AWS_SECRET_ACCESS_KEY: ${MINIO_PASSWORD}
+      AWS_ENDPOINT_URL: http://minio:9000
+      AWS_REGION: us-east-1
+    ports:
+      - "6789:6789"
+    volumes:
+      - ./mage_project:/home/src
+    #這是很重要的地方,在postgres跟minio開門之前,Mage不能上班
+    depends_on:
+      - postgres
+      - minio
+    networks:
+      - data_network
+  metabase:
+    image: metabase/metabase
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: pchome_db
+      MB_DB_PORT: 5432
+      MB_DB_USER: user
+      MB_DB_PASS: ${DB_PASSWORD}
+      MB_DB_HOST: postgres
+    networks:
+      - data_network
+#很重要,讓以上的東西在同一個網路
+networks:
+  data_network:
+    driver: bridge

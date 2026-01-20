@@ -1,0 +1,10 @@
+postgres_data/
+minio_data/
+venv/
+.env
+__pycache__/
+*.log
+.ssh/
+.bash_history
+.cache/
+mage_project/
